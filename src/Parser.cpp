@@ -1,3 +1,4 @@
+#include "Ast.hpp"
 #include "Lexer.hpp"
 #include <iostream>
 #include <assert.h>
@@ -25,114 +26,30 @@ void error(string msg)
     exit(1);
 }
 
-enum AstType
-{
-    AST_TYPE_EXPR,
-    AST_TYPE_NUMBER,
-    AST_TYPE_BIN_OP,
-};
-
-enum AstBinOpType
-{
-    AST_BIN_OP_TYPE_ADD,
-    AST_BIN_OP_TYPE_SUB,
-    AST_BIN_OP_TYPE_MUL,
-    AST_BIN_OP_TYPE_DIV,
-};
-
-struct AstExpr
-{
-    AstType type;
-};
-
-struct AstNumber
-{
-    AstType type;
-    float value;
-};
-
-struct AstBinaryOp
-{
-    AstType type;
-    AstBinOpType op_type;
-    AstExpr *left;
-    AstExpr *right;
-};
-
-typedef struct AstNumber AstNumber;
-
-int precedence(AstBinOpType type)
-{
-    if (type == AST_BIN_OP_TYPE_ADD || type == AST_BIN_OP_TYPE_SUB)
-    {
-        return 1;
-    }
-    else if (type == AST_BIN_OP_TYPE_MUL || type == AST_BIN_OP_TYPE_DIV)
-    {
-        return 2;
-    }
-    else
-    {
-        error("Unknown binary op type for precedence");
-    }
-}
-
-bool needRotate(AstBinOpType root, AstBinOpType right)
-{
-    return precedence(root) >= precedence(right);
-}
-
-AstNumber *createNumber(float value)
-{
-    AstNumber *a = new AstNumber();
-    a->type = AST_TYPE_NUMBER;
-    a->value = value;
-    return a;
-};
-
-AstBinaryOp *createBinOp(AstBinOpType op_type)
-{
-    AstBinaryOp *a = new AstBinaryOp();
-    a->type = AST_TYPE_BIN_OP;
-    a->op_type = op_type;
-    return a;
-};
-
-AstBinaryOp *createBinOp(AstBinOpType op_type, AstExpr *left, AstExpr *right)
-{
-    AstBinaryOp *a = new AstBinaryOp();
-    a->type = AST_TYPE_BIN_OP;
-    a->op_type = op_type;
-    a->left = left;
-    a->right = right;
-    return a;
-};
-
 class Parser
 {
     vector<Token> input;
     int size = 0;
     int i = 0;
 
-public:
-    Parser(vector<Token> _input)
+    bool needRotate(AstBinOpType root, AstBinOpType right)
     {
-        i = 0;
-        size = _input.size();
-        input = _input;
+        return precedence(root) >= precedence(right);
     }
+
+public:
+    Parser(vector<Token> input) : i(0), input(input), size(input.size()) {}
 
     void reset() { i = 0; }
+    bool isEnd() { return i == size; }
 
-    Token peek()
-    {
-        return input[i];
-    }
+    Token consume() { return input[i++]; }
+    Token peek() { return input[i]; }
 
-    bool peekDigit()
+    bool peekIs(TokenType type)
     {
         Token t = peek();
-        return t.type == TOKEN_NUMBER_LITERAL;
+        return t.type == type;
     }
 
     bool peekBinOp()
@@ -150,11 +67,6 @@ public:
         }
     }
 
-    Token consume()
-    {
-        return input[i++];
-    }
-
     void consumeWhiteSpace()
     {
         Token t = peek();
@@ -164,10 +76,7 @@ public:
         }
     }
 
-    bool isEnd()
-    {
-        return i == size;
-    }
+    AstExpr *parse() { return parseExpr(); }
 
     AstNumber *parseNumber()
     {
@@ -175,48 +84,44 @@ public:
         assert(t.type == TOKEN_NUMBER_LITERAL);
         float value = std::stof(t.source);
 
-        AstNumber *a = createNumber(value);
+        AstNumber *a = new AstNumber(value);
+        return a;
+    }
+
+    AstIdent *parseIdent()
+    {
+        Token t = consume();
+        assert(t.type == TOKEN_IDENT);
+        AstIdent *a = new AstIdent(t.source);
         return a;
     }
 
     AstExpr *parseExpr()
     {
         consumeWhiteSpace();
-        if (!peekDigit())
+        AstExpr *left;
+        if (peekIs(TOKEN_NUMBER_LITERAL))
+        {
+            left = (AstExpr *)parseNumber();
+        }
+        else if (peekIs(TOKEN_IDENT))
+        {
+            left = (AstExpr *)parseIdent();
+        }
+        else
         {
             error("Unexpected character, expecting digit");
         }
 
-        AstNumber *left = parseNumber();
         consumeWhiteSpace();
         if (!peekBinOp())
         {
             return (AstExpr *)left;
         }
 
-        AstBinaryOp *bin_op;
-
         Token bin_op_token = consume();
-        if (bin_op_token.type == TOKEN_ADD)
-        {
-            bin_op = createBinOp(AST_BIN_OP_TYPE_ADD);
-        }
-        else if (bin_op_token.type == TOKEN_SUB)
-        {
-            bin_op = createBinOp(AST_BIN_OP_TYPE_SUB);
-        }
-        else if (bin_op_token.type == TOKEN_MUL)
-        {
-            bin_op = createBinOp(AST_BIN_OP_TYPE_MUL);
-        }
-        else if (bin_op_token.type == TOKEN_DIV)
-        {
-            bin_op = createBinOp(AST_BIN_OP_TYPE_DIV);
-        }
-        else
-        {
-            error("Unexpected character, expecting binary operator :" + bin_op_token.type);
-        }
+        AstBinaryOp *bin_op = new AstBinaryOp(bin_op_token.type);
+
         consumeWhiteSpace();
         AstExpr *right = parseExpr();
         bin_op->left = (AstExpr *)left;
@@ -236,10 +141,5 @@ public:
         }
 
         return (AstExpr *)root;
-    }
-
-    AstExpr *parse()
-    {
-        return parseExpr();
     }
 };

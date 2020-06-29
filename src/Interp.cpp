@@ -1,6 +1,17 @@
+#include <map>
+
 class Interp
 {
+    map<string, float> globals;
+
 public:
+    Interp()
+    {
+        globals["PI"] = 3.141592;
+        globals["a"] = 110;
+        globals["phil"] = 2806;
+    }
+
     float evalBinOp(AstBinaryOp *bin_op)
     {
         switch (bin_op->op_type)
@@ -18,18 +29,29 @@ public:
         }
     }
 
-    float eval(AstExpr *expr)
+    float evalIdent(AstIdent *ast)
     {
-        if (expr->type == AST_TYPE_NUMBER)
+        if (globals.count(ast->name))
         {
-            return ((AstNumber *)expr)->value;
-        }
-        else if (expr->type == AST_TYPE_BIN_OP)
-        {
-            return evalBinOp((AstBinaryOp *)expr);
+            return globals[ast->name];
         }
         else
         {
+            return 0.0;
+        }
+    }
+
+    float eval(AstExpr *expr)
+    {
+        switch (expr->type)
+        {
+        case AST_TYPE_NUMBER:
+            return ((AstNumber *)expr)->value;
+        case AST_TYPE_IDENT:
+            return evalIdent((AstIdent *)expr);
+        case AST_TYPE_BIN_OP:
+            return evalBinOp((AstBinaryOp *)expr);
+        default:
             error("Unknown expression type: " + expr->type);
         }
     }

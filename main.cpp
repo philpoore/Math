@@ -16,7 +16,13 @@ int main(int argc, char **argv)
     {
         string input = string(argv[1]);
         lexer.setInput(input);
-        Parser parser(lexer.tokenize());
+        auto tokens = lexer.tokenize();
+
+        // Debug tokens
+        for (auto token : tokens)
+            cout << to_string(token) << endl;
+
+        Parser parser(tokens);
 
         AstExpr *ast = parser.parse();
 
