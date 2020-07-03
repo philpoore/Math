@@ -10,10 +10,38 @@ TODO
 ---------
 - Better whitespace
 - Nicer way of handling bin ops
-- Better numbers floats
+- Better numbers doubles
 - More maths operators ^
 - Uniary operators + - 
 - Maths functions sin cos tan log ln
+
+10-10-10
+
+    -
+   / \
+  10  -
+     / \
+    10 10
+
+
+10/10*10/10
+
+    /
+   / \
+  /  10
+ / \
+10  *
+   / \
+  10 10
+
+      /
+     / \
+    *  10
+   / \
+  /  10
+ / \
+10 10
+
 
 */
 
@@ -82,7 +110,7 @@ public:
     {
         Token t = consume();
         assert(t.type == TOKEN_NUMBER_LITERAL);
-        float value = std::stof(t.source);
+        double value = std::stod(t.source);
 
         AstNumber *a = new AstNumber(value);
         return a;
@@ -95,7 +123,7 @@ public:
         AstIdent *a = new AstIdent(t.source);
         return a;
     }
-
+    // 10/10*10/10
     AstExpr *parseExpr()
     {
         consumeWhiteSpace();
@@ -128,18 +156,25 @@ public:
         bin_op->right = right;
 
         AstBinaryOp *root = bin_op;
-
         if (right->type == AST_TYPE_BIN_OP)
         {
+
             AstBinaryOp *right_bin_op = ((AstBinaryOp *)right);
             if (needRotate(bin_op->op_type, right_bin_op->op_type))
             {
-                bin_op->right = right_bin_op->left;
-                right_bin_op->left = (AstExpr *)bin_op;
+                // cerr << "here" << to_string(right_bin_op) << endl;
+                AstBinaryOp *rightLeft = right_bin_op;
+                int p = precedence(right_bin_op->op_type);
+                while (rightLeft->left->type == AST_TYPE_BIN_OP && precedence(((AstBinaryOp *)rightLeft->left)->op_type) == p)
+                {
+                    rightLeft = (AstBinaryOp *)rightLeft->left;
+                }
+                // cerr << to_string(rightLeft) << endl;
+                bin_op->right = rightLeft->left;
+                rightLeft->left = (AstExpr *)bin_op;
                 root = right_bin_op;
             }
         }
-
         return (AstExpr *)root;
     }
 };

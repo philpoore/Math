@@ -1,0 +1,10 @@
+# Currently not working
+# node uses numbers starting with "0" to indicate octal numbers
+# this causes tests to fail, until we get octal literals in math.
+
+056-3-2
+0575+6+4
+5-0373+7+16
+1-0-0-091+7-3-035-00-9
+6+5+0+027+3-4+2+4-9+9
+9-7-9+040-1+7+61+8+8+3

@@ -1,32 +1,49 @@
 #include <iostream>
+#include <iomanip>
+#include <cmath>
+#include <limits>
+
 #include "src/Lexer.cpp"
 #include "src/Parser.cpp"
 #include "src/Interp.cpp"
 
 using namespace std;
 
+Interp interp;
+
+void run(string input)
+{
+    Lexer lexer(input);
+    auto tokens = lexer.tokenize();
+
+#ifdef DEBUG
+    // Debug tokens
+    for (auto token : tokens)
+        cerr << to_string(token) << endl;
+#endif
+
+    Parser parser(tokens);
+
+    AstExpr *ast = parser.parse();
+
+#ifdef DEBUG
+    // Debug AST
+    cerr << to_string(ast) << endl;
+    cerr << to_expr_string(ast) << endl;
+#endif
+
+    double value = interp.eval(ast);
+    cout << setprecision(16) << value << endl;
+}
+
 int main(int argc, char **argv)
 {
     bool repl = argc == 1;
 
-    Interp interp;
-    Lexer lexer;
-
     if (!repl)
     {
         string input = string(argv[1]);
-        lexer.setInput(input);
-        auto tokens = lexer.tokenize();
-
-        // Debug tokens
-        for (auto token : tokens)
-            cout << to_string(token) << endl;
-
-        Parser parser(tokens);
-
-        AstExpr *ast = parser.parse();
-
-        cout << interp.eval(ast) << endl;
+        run(input);
         exit(0);
     }
 
@@ -41,11 +58,6 @@ int main(int argc, char **argv)
             exit(0);
         }
 
-        lexer.setInput(input);
-        Parser parser(lexer.tokenize());
-
-        AstExpr *ast = parser.parse();
-
-        cout << interp.eval(ast) << endl;
+        run(input);
     }
 }

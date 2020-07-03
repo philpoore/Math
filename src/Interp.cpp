@@ -2,7 +2,7 @@
 
 class Interp
 {
-    map<string, float> globals;
+    map<string, double> globals;
 
 public:
     Interp()
@@ -12,7 +12,7 @@ public:
         globals["phil"] = 2806;
     }
 
-    float evalBinOp(AstBinaryOp *bin_op)
+    double evalBinOp(AstBinaryOp *bin_op)
     {
         switch (bin_op->op_type)
         {
@@ -29,7 +29,7 @@ public:
         }
     }
 
-    float evalIdent(AstIdent *ast)
+    double evalIdent(AstIdent *ast)
     {
         if (globals.count(ast->name))
         {
@@ -41,7 +41,7 @@ public:
         }
     }
 
-    float eval(AstExpr *expr)
+    double eval(AstExpr *expr)
     {
         switch (expr->type)
         {

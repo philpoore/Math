@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <assert.h>
 
 enum TokenType
 {
@@ -13,6 +14,29 @@ enum TokenType
     TOKEN_WHITESPACE,
     TOKEN_EOF,
 };
+
+std::string to_string(TokenType t);
+
+struct Token
+{
+    TokenType type;
+    std::string source;
+
+    int row = 0;
+    int col = 0;
+
+    std::string toString();
+};
+
+std::string to_string(Token t)
+{
+    return t.toString();
+}
+
+std::string Token::toString()
+{
+    return "Token: type=" + to_string(type) + " source='" + source + "'" + " row=" + std::to_string(row) + " col=" + std::to_string(col);
+}
 
 std::string to_string(TokenType t)
 {
@@ -39,48 +63,18 @@ std::string to_string(TokenType t)
     }
 }
 
-struct Token
-{
-    TokenType type;
-    std::string source;
-
-    int row = 0;
-    int col = 0;
-
-    std::string toString();
-};
-
-std::string to_string(Token t)
-{
-    return t.toString();
-}
-
-std::string Token::toString()
-{
-    return "Token: type=" + to_string(type) + " source='" + source + "'" + " row=" + std::to_string(row) + " col=" + std::to_string(col);
-}
-
 class Lexer
 {
     std::string input;
     int i = 0;
     int size = 0;
-
-    int row = 1;
-    int col = 1;
+    int row = 0;
+    int col = 0;
 
 public:
-    void setInput(std::string _input)
-    {
-        input = _input;
-        i = 0;
-        size = _input.size();
-    }
+    Lexer(std::string input) : input(input), i(0), size(input.size()), row(1), col(1) {}
 
-    char peek()
-    {
-        return input[i];
-    }
+    char peek() { return input[i]; }
 
     void advance()
     {
@@ -97,6 +91,7 @@ public:
     Token createToken(TokenType t)
     {
         Token token = {t};
+        assert((int)token.type >= 0);
         token.col = col;
         token.row = row;
         return token;
