@@ -6,26 +6,49 @@ RED="\e[31m"
 GREEN="\e[32m"
 RESET="\e[0m"
 
-TEST_FILE=${1:-"tests.txt"}
+TEST_FILE=$@
 
-cat $TEST_FILE | sed -e "/^$/d" -e "/^#/d" | while read test
-do
-    input=$(echo $test | sed "s/=.*//g")
-    expected=$(echo $test | sed "s/.*=//g")
-    actual=$(../math $input)
+input=$(cat $TEST_FILE | sed -e "/^$/d" -e "/^#/d")
 
+
+
+echo "$input" | {
     
-    extra=""
+    PASS=0
+    FAIL=0
+    TOTAL=0
 
-    if [[ $actual == $expected ]]
+    while read test
+    do
+        input=$(echo $test | sed "s/=.*//g")
+        expected=$(echo $test | sed "s/.*=//g")
+        actual=$(../math $input)
+
+        extra=""
+
+        if [[ $actual == $expected ]]
+        then
+            res=$GREEN"pass"$RESET
+
+            PASS=$((PASS + 1))
+            TOTAL=$((TOTAL + 1))
+        else
+            res=$RED"fail"$RESET
+            extra="$RED$actual$RESET"
+
+            FAIL=$((FAIL + 1))
+            TOTAL=$((TOTAL + 1))
+        fi
+
+        echo -e "--> [$res] $input = $expected $extra"
+    done
+
+    echo "Passed = $PASS" > /dev/stderr
+    echo "Failed = $FAIL" > /dev/stderr
+    echo "Total  = $TOTAL" > /dev/stderr
+
+    if [ $FAIL -gt 0 ]
     then
-        pass=true
-        res=$GREEN"pass"$RESET
-    else
-        pass=false
-        res=$RED"fail"$RESET
-        extra="$RED$actual$RESET"
+        exit 1;
     fi
-
-    echo -e "--> [$res] $input = $expected $extra"
-done
+}

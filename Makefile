@@ -25,3 +25,7 @@ test-hard:
 	./test/test.sh fuzz_test_hard.txt
 
 test-all: test test-fuzz
+
+
+check:
+	./test/test.sh tests.txt fuzz_test_01.txt
