@@ -5,25 +5,6 @@
 #include "Ast.hpp"
 #include "Lexer.hpp"
 
-/*
-
-
-TODO
----------
-[x] - Better whitespace
-[x] - Nicer way of handling bin ops
-[x] - Better numbers doubles
-[x] - More maths operators
-    [x] - MOD %
-    [x] - EXP **
-    [ ] - right assosiative operators
-[ ] - Uniary operators + -
-[x] - Maths functions sin cos tan log ln
-[ ] - statements
-[ ] - assignment
-[ ] - strings
-*/
-
 using namespace std;
 
 class Parser {
