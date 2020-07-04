@@ -13,5 +13,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: dir
+      run: ls -la
+    - name: make
+      run: make
     - name: make check
       run: make check
