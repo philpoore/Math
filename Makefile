@@ -12,10 +12,16 @@ debug:
 release:
 	g++ $(SRC) -o $(BIN) $(CPP_OPTS_RELEASE)
 
+format:
+	clang-format -i ./src/*.cpp ./src/*.hpp
+
 test: release
 	./test/test.sh
 
 test-fuzz:
 	./test/test.sh fuzz_test_01.txt
+
+test-hard:
+	./test/test.sh fuzz_test_hard.txt
 
 test-all: test test-fuzz

@@ -2,21 +2,17 @@
 
 using namespace std;
 
-vector<Token> Lexer::tokenize()
-{
+vector<Token> Lexer::tokenize() {
     vector<Token> tokens;
 
-    while (i < size)
-    {
+    while (i < size) {
         char a = peek();
-        if (isalpha(a))
-        {
+        if (isalpha(a)) {
             // keyword
             // ident
             string ident = "";
             Token t = createToken(TOKEN_IDENT);
-            while (isalpha(a) || isdigit(a))
-            {
+            while (isalpha(a) || isdigit(a)) {
                 ident += a;
                 advance();
                 a = peek();
@@ -24,27 +20,22 @@ vector<Token> Lexer::tokenize()
             t.source = ident;
             tokens.push_back(t);
             continue;
-        }
-        else if (isdigit(a))
-        {
+        } else if (isdigit(a)) {
             Token t = createToken(TOKEN_NUMBER_LITERAL);
             // number literal
             string number = "";
-            while (isdigit(a))
-            {
+            while (isdigit(a)) {
                 number += a;
                 advance();
                 a = peek();
             }
 
             // decimal point
-            if (a == '.')
-            {
+            if (a == '.') {
                 number += a;
                 advance();
                 a = peek();
-                while (isdigit(a))
-                {
+                while (isdigit(a)) {
                     number += a;
                     advance();
                     a = peek();
@@ -54,17 +45,13 @@ vector<Token> Lexer::tokenize()
             t.source = number;
             tokens.push_back(t);
             continue;
-        }
-        else if (isspace(a))
-        {
+        } else if (isspace(a)) {
             string whitespace;
 
             Token t = createToken(TOKEN_WHITESPACE);
-            while (isspace(a))
-            {
+            while (isspace(a)) {
                 whitespace += a;
-                if (a == '\n')
-                {
+                if (a == '\n') {
                     advanceRow();
                 }
                 advance();
@@ -73,34 +60,15 @@ vector<Token> Lexer::tokenize()
             t.source = whitespace;
             tokens.push_back(t);
             continue;
-        }
-        else if (a == '+')
-        {
-            Token t = createToken(TOKEN_ADD);
-            t.source = a;
+        } else if (a == '*' && peek(1) == '*') {
+            Token t = createToken(TOKEN_EXP);
+            t.source = "**";
             tokens.push_back(t);
-        }
-        else if (a == '-')
-        {
-            Token t = createToken(TOKEN_SUB);
-            t.source = a;
-            tokens.push_back(t);
-        }
-        else if (a == '*')
-        {
-            Token t = createToken(TOKEN_MUL);
-            t.source = a;
-            tokens.push_back(t);
-        }
-        else if (a == '/')
-        {
-            Token t = createToken(TOKEN_DIV);
-            t.source = a;
-            tokens.push_back(t);
-        }
-        else
-        {
-            Token t = createToken((TokenType)a);
+            advance();
+        } else {
+            TokenType tt =
+                tokenTypeMap.count(a) ? tokenTypeMap.at(a) : (TokenType)a;
+            Token t = createToken(tt);
             t.source = a;
             tokens.push_back(t);
         }
