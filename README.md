@@ -1,4 +1,7 @@
 # Math
+
+![C/C++ CI](https://github.com/philpoore/Math/workflows/C/C++%20CI/badge.svg)
+
 Just a little math interpreter
 
 
