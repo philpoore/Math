@@ -2,14 +2,31 @@
 
 using namespace std;
 
+// - keywords
+// - indent
+// - numbers
+// - whitespace
+// - multichar tokens
+// - single char tokens
 vector<Token> Lexer::tokenize() {
     vector<Token> tokens;
 
     while (i < size) {
         char a = peek();
-        if (isalpha(a)) {
-            // keyword
-            // ident
+        if (a == 'i' && peek(1) == 'f') {  // if
+            Token t = createToken(TOKEN_IF);
+            t.source = "if";
+            tokens.push_back(t);
+            advance(2);
+            continue;
+        } else if (peekStr(0, 4) == "else") {  // else
+            Token t = createToken(TOKEN_ELSE);
+            t.source = "else";
+            tokens.push_back(t);
+            advance(4);
+            continue;
+        } else if (isalpha(a)) {
+            // idents
             string ident = "";
             Token t = createToken(TOKEN_IDENT);
             while (isalpha(a) || isdigit(a)) {
@@ -64,16 +81,16 @@ vector<Token> Lexer::tokenize() {
             Token t = createToken(TOKEN_EXP);
             t.source = "**";
             tokens.push_back(t);
-            advance();
+            advance(2);
+            continue;
         } else {
             TokenType tt =
                 tokenTypeMap.count(a) ? tokenTypeMap.at(a) : (TokenType)a;
             Token t = createToken(tt);
             t.source = a;
             tokens.push_back(t);
+            advance();
         }
-
-        advance();
     }
 
     Token t = createToken(TOKEN_EOF);

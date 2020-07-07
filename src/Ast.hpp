@@ -14,6 +14,8 @@ enum AstType {
     AST_TYPE_BIN_OP,
     AST_TYPE_IDENT,
     AST_TYPE_FUNCTION_CALL,
+    AST_TYPE_BLOCK,
+    AST_TYPE_IF,
 };
 
 enum AstBinOpType {
@@ -84,6 +86,20 @@ struct AstFunctionCall {
     AstFunctionCall(string name) : type(AST_TYPE_FUNCTION_CALL), name(name) {}
 };
 
+struct AstBlock {
+    AstType type;
+    vector<AstStmt*> stmts;
+    AstBlock() : type(AST_TYPE_BLOCK) {}
+};
+
+struct AstIf {
+    AstType type;
+    AstExpr* expr;
+    AstBlock* if_branch = nullptr;
+    AstBlock* else_branch = nullptr;
+    AstIf() : type(AST_TYPE_IF) {}
+};
+
 string to_string(AstNumber* ast);
 string to_string(AstExpr* ast);
 string to_string(AstStmt* ast);
@@ -92,6 +108,8 @@ string to_string(AstAssign* ast);
 string to_string(AstIdent* ast);
 string to_string(AstBinaryOp* ast);
 string to_string(AstFunctionCall* ast);
+string to_string(AstBlock* ast);
+string to_string(AstIf* ast);
 
 string to_string(AstNumber* ast) {
     return "AstNumber(" + std::to_string(ast->value) + ")";
@@ -128,6 +146,26 @@ string to_string(AstStmts* ast) {
     return output;
 }
 
+string to_string(AstBlock* ast) {
+    int size = ast->stmts.size();
+    string output = "AstBlock([";
+    for (int i = 0; i < size; i++) {
+        auto stmt = ast->stmts[i];
+        output += to_string(stmt);
+        if (i < size - 1) {
+            output += ", ";
+        }
+    }
+    output += "])";
+    return output;
+}
+
+string to_string(AstIf* ast) {
+    return "AstIf(expr=" + to_string(ast->expr) +
+           " if_branch=" + to_string(ast->if_branch) +
+           " else_branch=" + to_string(ast->else_branch) + ")";
+}
+
 string to_string(AstAssign* ast) {
     return "AstAssign(name=" + ast->name + " expr=" + to_string(ast->expr) +
            ")";
@@ -151,6 +189,10 @@ string to_string(AstExpr* ast) {
             return to_string((AstBinaryOp*)ast);
         case AST_TYPE_FUNCTION_CALL:
             return to_string((AstFunctionCall*)ast);
+        case AST_TYPE_BLOCK:
+            return to_string((AstBlock*)ast);
+        case AST_TYPE_IF:
+            return to_string((AstIf*)ast);
     }
     return "AstExpr";
 }
@@ -163,6 +205,8 @@ string to_expr_string(AstNumber* ast);
 string to_expr_string(AstIdent* ast);
 string to_expr_string(AstBinaryOp* ast);
 string to_expr_string(AstFunctionCall* ast);
+string to_expr_string(AstBlock* ast);
+string to_expr_string(AstIf* ast);
 string to_expr_string(AstBinOpType type);
 
 string to_expr_string(AstExpr* ast) {
@@ -183,6 +227,10 @@ string to_expr_string(AstExpr* ast) {
             return to_expr_string((AstBinaryOp*)ast);
         case AST_TYPE_FUNCTION_CALL:
             return to_expr_string((AstFunctionCall*)ast);
+        case AST_TYPE_BLOCK:
+            return to_expr_string((AstBlock*)ast);
+        case AST_TYPE_IF:
+            return to_expr_string((AstIf*)ast);
     }
     return "AstExpr";
 }
@@ -194,6 +242,16 @@ string to_expr_string(AstStmts* ast) {
     }
     return output;
 }
+
+string to_expr_string(AstBlock* ast) {
+    string output = "{\n";
+    for (auto stmt : ast->stmts) {
+        output += to_expr_string(stmt) + "\n";
+    }
+    output += "\n}";
+    return output;
+}
+
 string to_expr_string(AstStmt* ast) { return to_expr_string(ast->expr) + ";"; }
 string to_expr_string(AstAssign* ast) {
     return ast->name + "=" + to_expr_string(ast->expr);
@@ -210,6 +268,12 @@ string to_expr_string(AstBinaryOp* ast) {
 
 string to_expr_string(AstFunctionCall* ast) {
     return ast->name + "(" + to_expr_string(ast->arg) + ")";
+}
+
+string to_expr_string(AstIf* ast) {
+    return "if (" + to_expr_string(ast->expr) + ") " +
+           to_expr_string(ast->if_branch) + " else " +
+           to_expr_string(ast->if_branch);
 }
 
 string to_expr_string(AstBinOpType type) {

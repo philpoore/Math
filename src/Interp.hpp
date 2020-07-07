@@ -37,4 +37,5 @@ class Interp {
     double eval(AstExpr* expr);
 
     void exec(AstStmts* ast);
+    void execStmt(AstStmt* ast);
 };

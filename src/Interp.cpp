@@ -70,18 +70,43 @@ double Interp::eval(AstExpr* expr) {
 
 void Interp::exec(AstStmts* ast) {
     for (auto stmt : ast->stmts) {
-        if (stmt->expr->type == AST_TYPE_ASSIGN) {
-            AstAssign* assign = (AstAssign*)stmt->expr;
-            double value = eval(assign->expr);
-            string name = assign->name;
+        execStmt(stmt);
+    }
+}
+
+void Interp::execStmt(AstStmt* stmt) {
+    if (stmt->expr->type == AST_TYPE_ASSIGN) {
+        AstAssign* assign = (AstAssign*)stmt->expr;
+        double value = eval(assign->expr);
+        string name = assign->name;
 #ifdef DEBUG
-            cerr << "--> setting variable: " + name + " to " + to_string(value)
-                 << endl;
+        cerr << "--> setting variable: " + name + " to " + to_string(value)
+             << endl;
 #endif
-            variables[name] = value;
-        } else {
-            double value = eval(stmt->expr);
-            cout << setprecision(16) << value << endl;
+        variables[name] = value;
+    } else if (stmt->expr->type == AST_TYPE_BLOCK) {
+        AstBlock* block = (AstBlock*)stmt->expr;
+        for (auto stmt : block->stmts) {
+            execStmt(stmt);
         }
+    } else if (stmt->expr->type == AST_TYPE_IF) {
+        AstIf* ast = (AstIf*)stmt->expr;
+        double a = eval(ast->expr);
+        if (a) {
+            if (ast->if_branch) {
+                for (auto stmt : ast->if_branch->stmts) {
+                    execStmt(stmt);
+                }
+            }
+        } else {
+            if (ast->else_branch) {
+                for (auto stmt : ast->else_branch->stmts) {
+                    execStmt(stmt);
+                }
+            }
+        }
+    } else {
+        double value = eval(stmt->expr);
+        cout << setprecision(16) << value << endl;
     }
 }

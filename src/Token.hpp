@@ -15,6 +15,10 @@ enum TokenType {
     TOKEN_EXP,
     TOKEN_LPAREN,
     TOKEN_RPAREN,
+    TOKEN_LCURLY,
+    TOKEN_RCURLY,
+    TOKEN_IF,
+    TOKEN_ELSE,
     TOKEN_SEMI,
     TOKEN_WHITESPACE,
     TOKEN_EOF,
@@ -32,6 +36,10 @@ std::map<TokenType, std::string> tokenTypeStringMap = {
     {TOKEN_EXP, "EXP"},
     {TOKEN_LPAREN, "LPAREN"},
     {TOKEN_RPAREN, "RPAREN"},
+    {TOKEN_LCURLY, "LCURLY"},
+    {TOKEN_RCURLY, "RCURLY"},
+    {TOKEN_IF, "IF"},
+    {TOKEN_ELSE, "ELSE"},
     {TOKEN_SEMI, "SEMI"},
     {TOKEN_WHITESPACE, "WHITESPACE"},
     {TOKEN_EOF, "EOF"},
@@ -42,7 +50,7 @@ const std::map<char, TokenType> tokenTypeMap = {
     {'/', TOKEN_DIV},    {'%', TOKEN_MOD},
 
     {'(', TOKEN_LPAREN}, {')', TOKEN_RPAREN}, {'=', TOKEN_EQ},
-    {';', TOKEN_SEMI},
+    {';', TOKEN_SEMI},   {'{', TOKEN_LCURLY}, {'}', TOKEN_RCURLY},
 };
 
 std::string to_string(TokenType t);

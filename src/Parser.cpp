@@ -63,8 +63,8 @@ Token Parser::expect(TokenType type, string msg = "") {
         if (output.size()) {
             output += ": ";
         }
-        output += "Expected token " + to_string(type) + " but found " +
-                  to_string(t.type);
+        output +=
+            "Expected token " + to_string(type) + " but found " + to_string(t);
         error(output);
         return Token();
     } else {
@@ -95,7 +95,12 @@ AstStmts* Parser::parseStatements() {
 AstStmt* Parser::parseStatement() {
     consumeWhiteSpace();
     AstExpr* expr = nullptr;
-    if (peek().type == TOKEN_IDENT) {
+
+    Token t = peek();
+    // Assignment statement
+    if (t.type == TOKEN_IF) {
+        expr = (AstExpr*)parseIf();
+    } else if (t.type == TOKEN_IDENT) {
         if (peekNonWhitespace(1).type == TOKEN_EQ) {
             // parse assignment statement
             Token t_ident = expect(TOKEN_IDENT);
@@ -107,6 +112,11 @@ AstStmt* Parser::parseStatement() {
             ast->expr = parseExpr();
             expr = (AstExpr*)ast;
         }
+    } else if (peek().type == TOKEN_LCURLY) {
+        // Block statement
+        consume();
+        expr = (AstExpr*)parseBlock();
+        expect(TOKEN_RCURLY, "Unmatched curly brace, missing closing bracket.");
     }
 
     // default to parsing expressions.
@@ -119,13 +129,52 @@ AstStmt* Parser::parseStatement() {
     }
 
     consumeWhiteSpace();
-    if (peek().type != TOKEN_EOF) {
+    if (expr->type != AST_TYPE_BLOCK && expr->type != AST_TYPE_IF &&
+        peek().type != TOKEN_EOF) {
         expect(TOKEN_SEMI, "Missing semi colon");
     }
 
     AstStmt* stmt = new AstStmt();
     stmt->expr = expr;
     return stmt;
+}
+
+AstIf* Parser::parseIf() {
+    AstIf* ast = new AstIf();
+    expect(TOKEN_IF);  // if
+    consumeWhiteSpace();
+
+    expect(TOKEN_LPAREN);  // if's test expr e.g (10 = 10)
+    ast->expr = parseExpr();
+    expect(TOKEN_RPAREN);
+
+    consumeWhiteSpace();
+    expect(TOKEN_LCURLY);  // if's if_branch
+    ast->if_branch = parseBlock();
+    expect(TOKEN_RCURLY);
+    consumeWhiteSpace();
+
+    if (peekIs(TOKEN_ELSE)) {
+        // Else branch.
+        expect(TOKEN_ELSE);
+        consumeWhiteSpace();
+        expect(TOKEN_LCURLY);  // if's else_branch
+        ast->else_branch = parseBlock();
+        expect(TOKEN_RCURLY);
+    }
+
+    return ast;
+}
+
+AstBlock* Parser::parseBlock() {
+    AstBlock* ast = new AstBlock();
+    while (!isEnd() && !peekIs(TOKEN_EOF) && !peekIs(TOKEN_RCURLY)) {
+        AstStmt* stmt = parseStatement();
+        if (stmt != nullptr) {
+            ast->stmts.push_back(stmt);
+        }
+    }
+    return ast;
 }
 
 AstNumber* Parser::parseNumber() {
@@ -177,7 +226,7 @@ AstExpr* Parser::parseSubExpr() {
 AstExpr* Parser::parseExpr(int precedence_level) {
     AstExpr* left;
     consumeWhiteSpace();
-    if (peekIs(TOKEN_EOF)) {
+    if (peekIs(TOKEN_EOF) || peekIs(TOKEN_RCURLY)) {
         return nullptr;
     } else if (peekIs(TOKEN_LPAREN)) {
         expect(TOKEN_LPAREN);

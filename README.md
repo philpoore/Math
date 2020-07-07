@@ -49,12 +49,13 @@ $ math
 - [x] Global constants (PI)
 - [x] Variable Assignment (a=10+10)
 - [x] Examples folder
-- [ ] Better readme
-- [ ] Better getting started guide, requirements etc.
+- [x] Better readme
+- [x] Requirements in readme
+- [ ] Getting started guide.
 - [x] Allow file input e.g "math file.math"
 - [ ] More operators (+= -=, boolean && ||, logic)
-- [ ] Comments
-- [ ] if / else
+- [ ] Comments (single line //, and multi line /_..._/)
+- [x] if / else
 - [ ] loops (while, for)
 - [ ] Custom Functions
 - [ ] AST optimizations

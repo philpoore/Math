@@ -33,6 +33,8 @@ class Parser {
     AstStmts* parse();
     AstStmts* parseStatements();
     AstStmt* parseStatement();
+    AstBlock* parseBlock();
+    AstIf* parseIf();
     AstNumber* parseNumber();
     AstIdent* parseIdent();
     AstFunctionCall* parseFunctionCall();

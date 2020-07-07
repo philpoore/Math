@@ -17,10 +17,13 @@ class Lexer {
     Lexer(std::string input) : input(input), i(0), size(input.size()) {}
 
     char peek(int d = 0) { return input[i + d]; }
+    std::string peekStr(int di, int len) {
+        return std::string(&input[i + di], len);
+    }
 
-    void advance() {
-        loc.col++;
-        i++;
+    void advance(int di = 1) {
+        loc.col += di;
+        i += di;
     }
 
     void advanceRow() {
