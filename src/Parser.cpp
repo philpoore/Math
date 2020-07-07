@@ -85,7 +85,9 @@ AstStmts* Parser::parseStatements() {
     AstStmts* ast = new AstStmts();
     while (!isEnd() && peek().type != TOKEN_EOF) {
         AstStmt* stmt = parseStatement();
-        ast->stmts.push_back(stmt);
+        if (stmt != nullptr) {
+            ast->stmts.push_back(stmt);
+        }
     }
     return ast;
 }
@@ -110,6 +112,10 @@ AstStmt* Parser::parseStatement() {
     // default to parsing expressions.
     if (expr == nullptr) {
         expr = parseExpr();
+    }
+
+    if (expr == nullptr) {
+        return nullptr;
     }
 
     consumeWhiteSpace();
@@ -171,7 +177,9 @@ AstExpr* Parser::parseSubExpr() {
 AstExpr* Parser::parseExpr(int precedence_level) {
     AstExpr* left;
     consumeWhiteSpace();
-    if (peekIs(TOKEN_LPAREN)) {
+    if (peekIs(TOKEN_EOF)) {
+        return nullptr;
+    } else if (peekIs(TOKEN_LPAREN)) {
         expect(TOKEN_LPAREN);
         left = parseExpr();
         expect(TOKEN_RPAREN, "Unmatched parentheses");
@@ -200,6 +208,7 @@ AstExpr* Parser::parseExpr(int precedence_level) {
 
         bin_op->left = left;
         bin_op->right = parseExpr(p);
+        assert(bin_op->right != nullptr);
         left = (AstExpr*)bin_op;
     }
     return left;
