@@ -49,6 +49,9 @@ $ math
 - Better readme, more examples, better getting started guide, requirements etc.
 - Allow file input e.g "math file.math"
 - More operators (+= -=, boolean, logic)
+- Comments
+- if / else
+- loops (while, for)
 - Custom Functions
 - AST optimization
 - Nicer error handling
