@@ -16,7 +16,7 @@ format:
 	clang-format -i ./src/*.cpp ./src/*.hpp
 
 test: release
-	./test/test.sh
+	./test/test.sh tests.txt
 
 test-fuzz:
 	./test/test.sh fuzz_test_01.txt
