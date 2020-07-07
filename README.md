@@ -1,6 +1,8 @@
 # Math
 
-Just a little math interpreter
+![C/C++ CI](https://github.com/philpoore/Math/workflows/C/C++%20CI/badge.svg)
+
+Just a simple math interpreter.
 
 ### Build
 
